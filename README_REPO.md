@@ -1,71 +1,71 @@
 ﻿# README_REPO
 
-## 1. Gioi thieu bai toan
+## 1. Giới thiệu bài toán
 
-Day la project demo he thong goi y san pham bang Neo4j.
+Đây là project demo hệ thống gợi ý sản phẩm bằng Neo4j.
 
-Y tuong chinh:
-- luu du lieu nguoi dung, san pham, danh muc va hanh vi mua hang duoi dang graph
-- dung Cypher query de suy ra recommendation
-- lay du lieu that tu BigQuery public dataset `thelook_ecommerce`
+Ý tưởng chính:
+- lưu dữ liệu người dùng, sản phẩm, danh mục và hành vi mua hàng dưới dạng graph
+- dùng Cypher query để suy ra recommendation
+- lấy dữ liệu thật từ BigQuery public dataset `thelook_ecommerce`
 
-Graph model hien tai:
+Graph model hiện tại:
 
 ```text
 (User)-[:PURCHASED]->(Product)-[:BELONGS_TO]->(Category)
 ```
 
-## 2. Muc tieu bai demo
+## 2. Mục tiêu bài demo
 
-Project nay nham chung minh:
-1. Neo4j phu hop voi bai toan co nhieu moi quan he.
-2. Recommendation co the lam duoc bang graph model va Cypher.
-3. Du lieu tu BigQuery co the import vao Neo4j de tao recommendation demo.
-4. Co the goi y theo user-based va category-based.
+Project này nhằm chứng minh:
+1. Neo4j phù hợp với bài toán có nhiều mối quan hệ.
+2. Recommendation có thể làm được bằng graph model và Cypher.
+3. Dữ liệu từ BigQuery có thể import vào Neo4j để tạo recommendation demo.
+4. Có thể gợi ý theo user-based và category-based.
 
-## 3. Nguon du lieu hien tai
+## 3. Nguồn dữ liệu hiện tại
 
-Project hien tai da chuyen sang dung BigQuery public dataset:
+Project hiện tại đã chuyển sang dùng BigQuery public dataset:
 
 - `bigquery-public-data.thelook_ecommerce`
 
-Bang du lieu duoc dung:
+Bảng dữ liệu được dùng:
 - `users`
 - `orders`
 - `order_items`
 - `products`
 
-Project Google Cloud de chay query cua ban:
+Project Google Cloud để chạy query của bạn:
 - `neo4j-bigquery-demo`
 
-Luu y:
-- data nam o `bigquery-public-data`
-- project `neo4j-bigquery-demo` duoc dung de gui query job va quota
+Lưu ý:
+- data nằm ở `bigquery-public-data`
+- project `neo4j-bigquery-demo` được dùng để gửi query job và quota
 
-## 4. Luong xu ly tong the
+## 4. Luồng xử lý tổng thể
 
-### Buoc 1. Xac thuc Google Cloud
+### Bước 1. Xác thực Google Cloud
 
-May can dang nhap `gcloud auth application-default login`.
+Máy cần đăng nhập `gcloud auth application-default login`.
 
-`.env` can co:
+`.env` cần có:
 
 ```env
 GOOGLE_CLOUD_PROJECT=neo4j-bigquery-demo
 ```
 
-### Buoc 2. Doc du lieu tu BigQuery
+### Bước 2. Đọc dữ liệu từ BigQuery
 
 File:
 - `src/bigquery_data/fetch_from_bigquery.py`
 
-Project doc du lieu bang query join:
+Project đọc dữ liệu bằng query join:
 - `orders`
 - `order_items`
 - `users`
 - `products`
 
-Ket qua moi dong gom:
+Kết quả mỗi dòng gồm:
 - `user_id`
 - `first_name`
 - `last_name`
@@ -73,53 +73,53 @@ Ket qua moi dong gom:
 - `product_name`
 - `category_name`
 
-### Buoc 3. Import vao Neo4j
+### Bước 3. Import vào Neo4j
 
 File:
 - `src/bigquery_data/set_up_database_using_bigquery.py`
 
-Project se:
-- tao constraint
-- clear du lieu cu neu can
+Project sẽ:
+- tạo constraint
+- clear dữ liệu cũ nếu cần
 - `MERGE` user
 - `MERGE` product
 - `MERGE` category
 - `MERGE` relationship `PURCHASED`
 - `MERGE` relationship `BELONGS_TO`
 
-### Buoc 4. Chay recommendation
+### Bước 4. Chạy recommendation
 
 File:
 - `src/recommendations/collaborative_filtering.py`
 
-Co 2 kieu recommendation:
+Có 2 kiểu recommendation:
 - `user-based`
 - `category-based`
 
-## 5. Giai thich recommendation hien tai
+## 5. Giải thích recommendation hiện tại
 
 ### 5.1. User-based recommendation
 
-Logic hien tai da duoc cai thien de bot bi rong:
-- tim cac user mua trung san pham voi target user
-- cham diem theo muc do overlap
-- boost them cac san pham thuoc category ma target user da thich
-- neu graph con thua, fallback bang category + popularity de van tra ve ket qua hop ly
+Logic hiện tại đã được cải thiện để bớt bị rỗng:
+- tìm các user mua trùng sản phẩm với target user
+- chấm điểm theo mức độ overlap
+- boost thêm các sản phẩm thuộc category mà target user đã thích
+- nếu graph còn thưa, fallback bằng category + popularity để vẫn trả về kết quả hợp lý
 
-Y nghia:
-- khong chi nhin nguoi dung giong nhau
-- ma con tan dung so thich category cua user
-- giup ket qua on hon khi sample du lieu chua lon
+Ý nghĩa:
+- không chỉ nhìn người dùng giống nhau
+- mà còn tận dụng sở thích category của user
+- giúp kết quả ổn hơn khi sample dữ liệu chưa lớn
 
 ### 5.2. Category-based recommendation
 
 Logic:
-- tim category user mua nhieu nhat
-- lay cac product khac trong category do
-- loai cac product da mua
-- tra ve danh sach con lai
+- tìm category user mua nhiều nhất
+- lấy các product khác trong category đó
+- loại các product đã mua
+- trả về danh sách còn lại
 
-## 6. Cac file quan trong
+## 6. Các file quan trọng
 
 - `src/main.py`
 - `src/database/database_setup.py`
@@ -128,9 +128,9 @@ Logic:
 - `src/recommendations/collaborative_filtering.py`
 - `.env`
 
-## 7. Cach chay project
+## 7. Cách chạy project
 
-### 7.1. Cai thu vien
+### 7.1. Cài thư viện
 
 ```powershell
 py -3.13 -m venv .venv
@@ -138,34 +138,34 @@ py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-### 7.2. Import data tu BigQuery va chay recommendation
+### 7.2. Import data từ BigQuery và chạy recommendation
 
 ```powershell
 $env:PYTHONPATH='.'
 .\.venv\Scripts\python.exe -m src.main --bootstrap-bigquery --project-id neo4j-bigquery-demo --limit 2000 --user-id 1
 ```
 
-Flag huu ich:
+Flag hữu ích:
 - `--limit 500`
 - `--limit 2000`
 - `--keep-existing-data`
 
-Neu chi muon chay recommendation tren data da import san:
+Nếu chỉ muốn chạy recommendation trên data đã import sẵn:
 
 ```powershell
 $env:PYTHONPATH='.'
 .\.venv\Scripts\python.exe -m src.main --user-id 1
 ```
 
-## 8. Cach kiem tra du lieu tren Neo4j
+## 8. Cách kiểm tra dữ liệu trên Neo4j
 
-Tong node:
+Tổng node:
 
 ```cypher
 MATCH (n) RETURN count(n) AS total_nodes
 ```
 
-Tong relationship:
+Tổng relationship:
 
 ```cypher
 MATCH ()-[r]->() RETURN count(r) AS total_relationships
@@ -179,14 +179,14 @@ RETURN u, r1, p, r2, c
 LIMIT 50
 ```
 
-Xem user 1 da mua gi:
+Xem user 1 đã mua gì:
 
 ```cypher
 MATCH (u:User {id: '1'})-[:PURCHASED]->(p:Product)
 RETURN u, p
 ```
 
-Xem user 1 thuong mua category nao:
+Xem user 1 thường mua category nào:
 
 ```cypher
 MATCH (u:User {id: '1'})-[:PURCHASED]->(:Product)-[:BELONGS_TO]->(c:Category)
@@ -194,7 +194,7 @@ RETURN c.name AS category, count(*) AS so_lan_mua
 ORDER BY so_lan_mua DESC
 ```
 
-Xem top 10 product duoc mua nhieu nhat:
+Xem top 10 product được mua nhiều nhất:
 
 ```cypher
 MATCH (:User)-[:PURCHASED]->(p:Product)
@@ -203,7 +203,7 @@ ORDER BY so_lan_duoc_mua DESC
 LIMIT 10
 ```
 
-Xem top 10 category duoc mua nhieu nhat:
+Xem top 10 category được mua nhiều nhất:
 
 ```cypher
 MATCH (:User)-[:PURCHASED]->(:Product)-[:BELONGS_TO]->(c:Category)
@@ -212,7 +212,7 @@ ORDER BY tong_luot_mua DESC
 LIMIT 10
 ```
 
-Xem cac user giong user 1 theo san pham mua chung:
+Xem các user giống user 1 theo sản phẩm mua chung:
 
 ```cypher
 MATCH (target:User {id: '1'})-[:PURCHASED]->(p:Product)
@@ -223,7 +223,7 @@ ORDER BY shared_products DESC
 LIMIT 10
 ```
 
-Xem recommendation user-based truc tiep:
+Xem recommendation user-based trực tiếp:
 
 ```cypher
 MATCH (target:User {id: '1'})-[:PURCHASED]->(p:Product)
@@ -246,7 +246,7 @@ ORDER BY shared_signal DESC, category_signal DESC, product ASC
 LIMIT 5
 ```
 
-Xem recommendation category-based truc tiep:
+Xem recommendation category-based trực tiếp:
 
 ```cypher
 MATCH (u:User {id: '1'})-[:PURCHASED]->(p:Product)-[:BELONGS_TO]->(c:Category)
@@ -260,7 +260,7 @@ ORDER BY recommendation
 LIMIT 5
 ```
 
-Xem product nao thuoc mot category cu the:
+Xem product nào thuộc một category cụ thể:
 
 ```cypher
 MATCH (p:Product)-[:BELONGS_TO]->(c:Category {name: 'Shorts'})
@@ -269,7 +269,7 @@ ORDER BY product
 LIMIT 20
 ```
 
-Xem user nao da mua mot product cu the:
+Xem user nào đã mua một product cụ thể:
 
 ```cypher
 MATCH (u:User)-[:PURCHASED]->(p:Product {title: "Lucky Brand Men's Printed Baja Short"})
@@ -277,34 +277,34 @@ RETURN u.id AS user_id, u.name AS user_name
 LIMIT 20
 ```
 
-## 9. Ket qua demo hien tai
+## 9. Kết quả demo hiện tại
 
-Voi `user_id = 1`, project hien tai da cho ra:
-- user-based recommendation co ket qua
-- category-based recommendation co ket qua
+Với `user_id = 1`, project hiện tại đã cho ra:
+- user-based recommendation có kết quả
+- category-based recommendation có kết quả
 
-Dieu nay cho thay:
-- BigQuery da doc du lieu thanh cong
-- Neo4j da nhan graph data thanh cong
-- recommendation da hoat dong tren du lieu that
+Điều này cho thấy:
+- BigQuery đã đọc dữ liệu thành công
+- Neo4j đã nhận graph data thành công
+- recommendation đã hoạt động trên dữ liệu thật
 
-## 10. Diem manh
+## 10. Điểm mạnh
 
-- dung du lieu that tu BigQuery public dataset
-- graph model de giai thich
-- recommendation de demo voi leader
-- co the mo rong them score, review, viewed, added-to-cart
+- dùng dữ liệu thật từ BigQuery public dataset
+- graph model dễ giải thích
+- recommendation dễ demo với leader
+- có thể mở rộng thêm score, review, viewed, added-to-cart
 
-## 11. Han che hien tai
+## 11. Hạn chế hiện tại
 
-- van la demo, chua phai production system
-- chua co giao dien web
-- chua co weighted time-decay
-- chua co hybrid ML/embedding
-- recommendation user-based van phu thuoc vao muc do day cua graph
+- vẫn là demo, chưa phải production system
+- chưa có giao diện web
+- chưa có weighted time-decay
+- chưa có hybrid ML/embedding
+- recommendation user-based vẫn phụ thuộc vào mức độ dày của graph
 
-## 12. Cau ket luan de thuyet trinh
+## 12. Câu kết luận để thuyết trình
 
-Co the noi gon:
+Có thể nói gọn:
 
-> Project nay dung BigQuery public dataset de lay du lieu mua hang, dua vao Neo4j thanh graph quan he, roi dung Cypher de sinh goi y san pham theo user similarity va category preference mot cach truc quan, de giai thich va de demo.
+> Project này dùng BigQuery public dataset để lấy dữ liệu mua hàng, đưa vào Neo4j thành graph quan hệ, rồi dùng Cypher để sinh gợi ý sản phẩm theo user similarity và category preference một cách trực quan, dễ giải thích và dễ demo.
