@@ -1,68 +1,112 @@
-# Real-Time Product Recommendation System
+# Neo4j + BigQuery Recommendation Project
 
-This project imports purchase data from the public BigQuery dataset `bigquery-public-data.thelook_ecommerce`, stores it in Neo4j, and generates product recommendations with Cypher.
+## Setup
 
-## Main Flow
-- Source data: BigQuery `thelook_ecommerce`
-- Graph storage: Neo4j
-- Recommendation types: user-based and category-based
+### 1. Clone the project
+```powershell
+git clone <your-repo-url>
+cd neo4j-prj
+```
 
-## Required Environment Variables
-Put these in `.env`:
+### 2. Create a virtual environment
+```powershell
+py -3 -m venv .venv
+```
+
+### 3. Activate the virtual environment
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+### 4. Install dependencies
+```powershell
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+## Configure `.env`
+
+Create a `.env` file in the project root:
 
 ```env
-NEO4J_URI=neo4j+s://your-instance.databases.neo4j.io
+NEO4J_URI=bolt://localhost:7687
 NEO4J_USERNAME=neo4j
-NEO4J_PASSWORD=your-password
+NEO4J_PASSWORD=your_neo4j_password
 NEO4J_DATABASE=neo4j
-GOOGLE_CLOUD_PROJECT=recommendation-system-418420
-GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\service-account.json
+GOOGLE_CLOUD_PROJECT=your-gcp-project-id
+GOOGLE_APPLICATION_CREDENTIALS=credentials/key.json
 ```
 
-If your machine is already authenticated with Google Cloud, `GOOGLE_APPLICATION_CREDENTIALS` may not be needed.
+Notes:
+- `NEO4J_URI` can also be your Neo4j Aura connection string.
+- `GOOGLE_APPLICATION_CREDENTIALS` should point to your BigQuery service account JSON file.
 
-## One Environment Only
-Use only `.venv` for this project.
+## Run the project
+
+### Option 1. Import data from BigQuery and run recommendations
+```powershell
+$env:PYTHONPATH="."
+python -m src.main --bootstrap-bigquery --project-id your-gcp-project-id --limit 2000 --user-id 1
+```
+
+### Option 2. Run recommendations only
+```powershell
+$env:PYTHONPATH="."
+python -m src.main --user-id 1
+```
+
+### Option 3. Run the Streamlit app
+```powershell
+streamlit run app.py
+```
+
+## Quick start
 
 ```powershell
-py -3.13 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+git clone <your-repo-url>
+cd neo4j-prj
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-In your IDE, select `.venv\Scripts\python.exe`.
+Create `.env`, then run:
 
-## Import Data From BigQuery
 ```powershell
-$env:PYTHONPATH='.'
-.\.venv\Scripts\python.exe -m src.main --bootstrap-bigquery --project-id neo4j-bigquery-demo --user-id 1
+$env:PYTHONPATH="."
+python -m src.main --bootstrap-bigquery --project-id your-gcp-project-id --limit 2000 --user-id 1
 ```
 
-Useful flags:
-- `--limit 500`
-- `--keep-existing-data`
+## Google Cloud Setup (BigQuery)
 
-Recommended demo run:
+### 1. Enable BigQuery API
+- Open Google Cloud Console
+- Select your project
+- Enable `BigQuery API`
+
+### 2. Create Service Account
+- Go to `IAM & Admin` -> `Service Accounts`
+- Click `Create Service Account`
+
+### 3. Assign Role
+- Grant this role:
+  - `BigQuery Admin`
+
+### 4. Create JSON Key
+- Open the service account
+- Go to `Keys`
+- Click `Add Key` -> `Create new key` -> `JSON`
+
+### 5. Place the key file
+- Save the downloaded file as:
+
 ```powershell
-$env:PYTHONPATH='.'
-.\.venv\Scripts\python.exe -m src.main --bootstrap-bigquery --project-id neo4j-bigquery-demo --limit 2000 --user-id 1
+credentials\key.json
 ```
 
-## Recommendation Strategy
-- `user-based`: uses shared purchases as the main similarity signal, boosts candidates from categories the user already likes, and fills any missing slots with strong category/popularity fallback picks so sparse samples do not return empty results too often.
-- `category-based`: recommends unseen products from the user's strongest category.
-
-## Files Used By The Main Flow
-- `src/bigquery_data/fetch_from_bigquery.py`
-- `src/bigquery_data/set_up_database_using_bigquery.py`
-- `src/database/database_setup.py`
-- `src/recommendations/collaborative_filtering.py`
-- `src/main.py`
-
-## Notes
-- Legacy Fake Store and duplicate BigQuery files were removed from the main flow.
-- Dependencies are reduced to the packages needed for BigQuery and Neo4j.
-- If Windows feels slow, keep the repo outside OneDrive.
-
-## License
-This project is licensed under the [MIT License](src/docs/LICENSE).
+### 6. Update `.env`
+```env
+GOOGLE_CLOUD_PROJECT=your-gcp-project-id
+GOOGLE_APPLICATION_CREDENTIALS=credentials/key.json
+```
